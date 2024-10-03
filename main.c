@@ -5,22 +5,27 @@
 int main() {
     int i, j;
     Flor flores[150];
-    FILE *f = fopen("IrisDataset.csv", "rt");
+    FILE *f = fopen("C:\\Users\\vinic\\OneDrive\\Documents\\UDESC\\4 Semestre\\TEG\\PercursosECaminhos\\Tarefa1A\\IrisDataset.csv", "rt");
     if( f != NULL ) {
         char lixo[50];
         fscanf(f, "%[^\n]", lixo );
         for( i = 0; i < 150; i++ ) {
-            fscanf( f, "%s,", flores[i].tipo );
+            for( j = 0; j < 11; j++ ) {
+                flores[i].tipo[j] = '\0';
+            }
+            fscanf(f, "\n%10[^,],", flores[i].tipo); // Lê até 10 caracteres ou até a vírgula
             fscanf( f, "%lf,%lf,%lf,%lf", &flores[i].sl, &flores[i].sw, &flores[i].pl, &flores[i].pw );
         }
         fclose(f);
 
     // double distEuc[150][150], distEucNorm[150][150];
     double **distEuc = malloc( 150*sizeof(double*) );
-    double distEucNorm[150][150];
-    int aux = 0, max = 0, min = 0;
     for( i = 0; i < 150; i++ ) {
         distEuc[i] = malloc(150*sizeof(double));
+    }
+    double distEucNorm[150][150];
+    double aux = 0, max = 0, min = 0;
+    for( i = 0; i < 150; i++ ) {
         distEuc[i][i] = 0;
         for( j = i+1; j < 150; j++ ) {
             aux = distEucl( &flores[i], &flores[j] );
@@ -65,7 +70,7 @@ int main() {
                 matrizAdj[i][j] = 0;
                 matrizAdj[j][i] = 0;
             }
-            printf("%i ", distEuc[i][j]);
+            printf("%.1lf ", distEuc[i][j]);
         }
         printf("\n");
     }
