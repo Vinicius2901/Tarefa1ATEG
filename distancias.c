@@ -8,9 +8,9 @@ double distEuclNorm(  double **distEuc, int linha, int coluna, double min, doubl
     return (distEuc[linha][coluna]-min)/(max-min);
 }
 
-void dfs(int raiz, int **matAdj, int *vetContido){
+void dfs(int raiz, int matAdj[150][150], int *vetContido){
     vetContido[raiz] = 1;
-    for (int i = raiz; i < 150; i++)
+    for (int i = 0; i < 150; i++)
     {
         if (matAdj[raiz][i] == 1)
         {
