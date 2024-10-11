@@ -7,3 +7,21 @@ double distEucl( Flor *f1, Flor *f2 ) {
 double distEuclNorm(  double **distEuc, int linha, int coluna, double min, double max ) {
     return (distEuc[linha][coluna]-min)/(max-min);
 }
+
+void dfs(int raiz, int **matAdj, int *vetContido){
+    vetContido[raiz] = 1;
+    for (int i = raiz; i < 150; i++)
+    {
+        if (matAdj[raiz][i] == 1)
+        {
+            if (vetContido[i] == 0)
+            {
+                dfs(i, matAdj, vetContido);
+            }
+            
+        }
+        
+    }
+    
+    
+}
