@@ -11,4 +11,5 @@ double distEucl( Flor *f1, Flor *f2 );
 
 double distEuclNorm(  double **distEuc, int linha, int coluna, double min, double max );
 
+void dfs(int raiz, int **matAdj, int *vetContido);
 #endif
