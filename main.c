@@ -115,7 +115,7 @@ int main()
         matrizAdj[i][i] = 0;
         for (j = i + 1; j < 150; j++)
         {
-            if (distEucNorm[i][j] <= 0.3)
+            if (distEucNorm[i][j] <= 0.2)
             {
                 matrizAdj[i][j] = 1;
                 matrizAdj[j][i] = 1;
@@ -129,20 +129,61 @@ int main()
         }
         // printf("\n");
     }
-   /* FILE *teste2 = fopen("distEuclidianasNormalizadas.csv", "wt");
-    if (teste2 != NULL)
-    {
-        for (int i = 0; i < 150; i++)
-        {
-            for (int j = i + 1; j < 150; j++)
-            {
+    /* FILE *teste2 = fopen("distEuclidianasNormalizadas.csv", "wt");
+     if (teste2 != NULL)
+     {
+         for (int i = 0; i < 150; i++)
+         {
+             for (int j = i + 1; j < 150; j++)
+             {
 
-                fprintf(teste2, "No 1: %d, No2: %d, DE: %.2lf\n", i, j, distEucNorm[i][j]);
-            }
-        }
-    }
-*/
-    FILE *data = fopen("data.csv", "wt");
+                 fprintf(teste2, "No 1: %d, No2: %d, DE: %.2lf\n", i, j, distEucNorm[i][j]);
+             }
+         }
+     }
+
+ */
+// FILE *mAdj = fopen("matrizAdj.txt", "wt");
+// if (mAdj != NULL)
+// {
+//     for (int i = 0; i < 150; i++)
+//     {
+//         for (int j = 0; j < 150; j++)
+//         {
+//             fprintf(mAdj, "Conexao %d a %d: %d\n", i, j, matrizAdj[i][j]);
+//         }
+//     }
+    
+// }
+
+
+    // int *vetContido;
+    // vetContido = calloc(150,sizeof(int));
+    // dfs(0, matrizAdj,vetContido);
+    // FILE *testes3 = fopen("marcasRaiz0.csv", "wt");
+    // if (testes3 != NULL)
+    // {
+    //     for (int i = 1; i < 150; i++)
+    //     {
+    //         fprintf(testes3,"%d\n", vetContido[i]);
+    //     }
+        
+    // }
+    
+    //    int *vetContido2;
+    // vetContido2 = calloc(150,sizeof(int));
+    // dfs(50,matrizAdj,vetContido2);
+    // FILE *teste4 = fopen("marcasRaiz50.csv", "wt");
+    // if (teste4 != NULL)
+    // {
+    //     for (int i = 1; i < 150; i++)
+    //     {
+    //         fprintf(teste4, "%d\n", vetContido2[i]);
+    //     }
+        
+    // }
+    
+        FILE *data = fopen("data.csv", "wt");
     if (data != NULL)
     {
         fprintf(data, "150,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i\n", distEuc[iMaxEuc][jMaxEuc], iMaxEuc, jMaxEuc,
