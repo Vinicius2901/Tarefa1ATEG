@@ -2,45 +2,39 @@
 #include <stdlib.h>
 #include "distancias.h"
 
-int main()
+int leituraIrisDataset(Flor *flores, FILE *arquivoCSV)
 {
-    int i, j;
-    Flor flores[150];
-    // Abertura e coleta dos dados do arquivo csv
-    FILE *f = fopen("IrisDataset.csv", "rt");
-    if (f != NULL)
+    if (arquivoCSV != NULL)
     {
         char lixo[100];
-        fscanf(f, "%[^\n]", lixo);
-        for (i = 0; i < 150; i++)
+        fscanf(arquivoCSV, "%[^\n]", lixo);
+        for (int i = 0; i < 150; i++)
         {
-            for (j = 0; j < 11; j++)
+            for (int j = 0; j < 11; j++)
             {
                 flores[i].tipo[j] = '\0';
             }
-            fscanf(f, "\n%[^,],", flores[i].tipo); // Lê até 10 caracteres ou até a vírgula
-            fscanf(f, "%lf,%lf,%lf,%lf", &flores[i].sl, &flores[i].sw, &flores[i].pl, &flores[i].pw);
+            fscanf(arquivoCSV, "\n%[^,],", flores[i].tipo); // Lê até 10 caracteres ou até a vírgula
+            fscanf(arquivoCSV, "%lf,%lf,%lf,%lf", &flores[i].sl, &flores[i].sw, &flores[i].pl, &flores[i].pw);
         }
-        fclose(f);
+        fclose(arquivoCSV);
+        return 1;
     }
     else
     {
-        printf("Erro na abertura de arquivo\n");
-        return 1;
+        return 0;
     }
-    // double distEuc[150][150], distEucNorm[150][150];
-    // Inicialização da matriz de distâncias euclidianas e cálculo delas entre as flores
-    double **distEuc = malloc(150 * sizeof(double *));
-    for (i = 0; i < 150; i++)
-    {
-        distEuc[i] = malloc(150 * sizeof(double));
-    }
+}
+
+void calculoDistanciaEuclidiana(double **distEuc, Flor *flores, int *linhaMaximoEuclidiano, 
+int *colunaMaximoEuclidiano, int *linhaMinimoEuclidiano, int *colunaMinimoEuclidiano)
+{
     double aux = 0;
     int iMaxEuc = 0, jMaxEuc = 0, iMinEuc = 0, jMinEuc = 0;
-    for (i = 0; i < 150; i++)
+    for (int i = 0; i < 150; i++)
     {
         distEuc[i][i] = 0;
-        for (j = i + 1; j < 150; j++)
+        for (int j = i + 1; j < 150; j++)
         {
             aux = distEucl(&flores[i], &flores[j]);
             distEuc[i][j] = aux;
@@ -64,32 +58,49 @@ int main()
             }
         }
     }
-    // FILE *teste = fopen("distEuclidianas.csv", "wt");
-    // if (teste != NULL)
-    // {
-    //     for (int i = 0; i < 150; i++)
-    //     {
-    //         for (int j = i + 1; j < 150; j++)
-    //         {
+    (*linhaMaximoEuclidiano) = iMaxEuc;
+    (*colunaMaximoEuclidiano) = jMaxEuc;
+    (*linhaMinimoEuclidiano) = iMinEuc;
+    (*colunaMinimoEuclidiano) = jMinEuc;
+}
 
-    //             fprintf(teste, "No 1: %d, No2: %d, DE: %.2lf\n", i, j, distEuc[i][j]);
-    //         }
-    //     }
-    // }
-
-    // Inicialização da matriz de distâncias euclidianas normalizadas e cálculo delas entre as flores
-    double distEucNorm[150][150];
-    int iMaxNorm = 0, jMaxNorm = 0, iMinNorm = 0, jMinNorm = 0;
-    for (i = 0; i < 150; i++)
+int testesDistanciaEuclidiana(FILE *csvDestino, double **distanciasEuclidianas)
+{
+    if (csvDestino != NULL)
     {
-        distEucNorm[i][i] = 0;
-        for (j = i + 1; j < 150; j++)
+        for (int i = 0; i < 150; i++)
         {
-            aux = distEuclNorm(distEuc, i, j, distEuc[iMinEuc][jMinEuc], distEuc[iMaxEuc][jMaxEuc]);
-            distEucNorm[i][j] = aux;
-            distEucNorm[j][i] = aux;
+            for (int j = i + 1; j < 150; j++)
+            {
+
+                fprintf(csvDestino, "No 1: %d, No2: %d, DE: %.2lf\n", i, j, distanciasEuclidianas[i][j]);
+            }
+        }
+        fclose(csvDestino);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void normalizacaoDistanciasEuclidianas(double **distanciasNormalizadas, double **distanciasEuclidianas, 
+int *linhaMaximoNormalizado, int *colunaMaximoNormalizado, int *linhaMinimoNormalizado, int *colunaMinimoNormalizado, 
+double minimoEuclidiano, double maximoEuclidiano)
+{
+    double aux = 0;
+    int iMaxNorm = 0, jMaxNorm = 0, iMinNorm = 0, jMinNorm = 0;
+    for (int i = 0; i < 150; i++)
+    {
+        distanciasNormalizadas[i][i] = 0;
+        for (int j = i + 1; j < 150; j++)
+        {
+            aux = distEuclNorm(distanciasEuclidianas, i, j, minimoEuclidiano, maximoEuclidiano);
+            distanciasNormalizadas[i][j] = aux;
+            distanciasNormalizadas[j][i] = aux;
             // Pega a posição do maior euclidiano normalizado e do menor, caso seja a primeira iteração
-            if (aux > distEucNorm[iMaxNorm][jMaxNorm])
+            if (aux > distanciasNormalizadas[iMaxNorm][jMaxNorm])
             {
                 iMaxNorm = i;
                 jMaxNorm = j;
@@ -100,62 +111,172 @@ int main()
                 }
             }
             // Pega a posição do mínimo euclidiano normalizado
-            if (aux < distEucNorm[iMinNorm][jMinNorm])
+            if (aux < distanciasNormalizadas[iMinNorm][jMinNorm])
             {
                 iMinNorm = i;
                 jMinNorm = j;
             }
         }
     }
+    (*linhaMaximoNormalizado) = iMaxNorm;
+    (*colunaMaximoNormalizado) = jMaxNorm;
+    (*linhaMinimoNormalizado) = iMinNorm;
+    (*colunaMinimoNormalizado) = jMinNorm;
+}
 
-    // Inicialização da matriz adjacência e ligação dos nodos caso a distância euclidiana normalizada seja <= 0,3
-    int matrizAdj[150][150];
-    for (i = 0; i < 150; i++)
+void montarMatrizAdjacencia(int **matrizAdjacencia, double **distanciasNormalizadas)
+{
+    for (int i = 0; i < 150; i++)
     {
-        matrizAdj[i][i] = 0;
-        for (j = i + 1; j < 150; j++)
+        matrizAdjacencia[i][i] = 0;
+        for (int j = i + 1; j < 150; j++)
         {
-            if (distEucNorm[i][j] <= 0.2)
+            if (distanciasNormalizadas[i][j] <= 0.2)
             {
-                matrizAdj[i][j] = 1;
-                matrizAdj[j][i] = 1;
+                matrizAdjacencia[i][j] = 1;
+                matrizAdjacencia[j][i] = 1;
             }
             else
             {
-                matrizAdj[i][j] = 0;
-                matrizAdj[j][i] = 0;
+                matrizAdjacencia[i][j] = 0;
+                matrizAdjacencia[j][i] = 0;
             }
-            // printf("%i ", matrizAdj[i][j]);
         }
-        // printf("\n");
     }
-    /* FILE *teste2 = fopen("distEuclidianasNormalizadas.csv", "wt");
-     if (teste2 != NULL)
-     {
-         for (int i = 0; i < 150; i++)
-         {
-             for (int j = i + 1; j < 150; j++)
-             {
+}
 
-                 fprintf(teste2, "No 1: %d, No2: %d, DE: %.2lf\n", i, j, distEucNorm[i][j]);
-             }
-         }
-     }
+int testesNormalizacao(FILE *csvDestino, double **distanciasNormalizadas)
+{
+    if (csvDestino != NULL)
+    {
+        for (int i = 0; i < 150; i++)
+        {
+            for (int j = i + 1; j < 150; j++)
+            {
 
- */
-// FILE *mAdj = fopen("matrizAdj.txt", "wt");
-// if (mAdj != NULL)
-// {
-//     for (int i = 0; i < 150; i++)
-//     {
-//         for (int j = 0; j < 150; j++)
-//         {
-//             fprintf(mAdj, "Conexao %d a %d: %d\n", i, j, matrizAdj[i][j]);
-//         }
-//     }
-    
-// }
+                fprintf(csvDestino, "No 1: %d, No2: %d, DE: %.2lf\n", i, j, distanciasNormalizadas[i][j]);
+            }
+        }
+        fclose(csvDestino);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
 
+int escritaResposta(FILE *csvDestino, int **matrizAdjacencia, double maxDistanciasNormalizadas, double minDistanciasNormalizadas, int iMaxNorm, 
+int jMaxNorm, int iMinNorm, int jMinNorm, double maxDistanciasEuclidianas, double minDistanciasEuclidianas, int iMaxEuc, int jMaxEuc, 
+int iMinEuc, int jMinEuc)
+{
+    if (csvDestino != NULL)
+    {
+        fprintf(csvDestino, "150,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i\n", maxDistanciasEuclidianas, iMaxEuc, jMaxEuc,
+                minDistanciasEuclidianas, iMinEuc, jMinEuc, maxDistanciasNormalizadas, iMaxNorm, jMaxNorm, minDistanciasNormalizadas,
+                iMinNorm, jMinNorm);
+        for (int i = 0; i < 150; i++)
+        {
+            for (int j = i + 1; j < 150; j++)
+            {
+                if (matrizAdjacencia[i][j] == 1)
+                    fprintf(csvDestino, "%i,%i\n", i, j);
+            }
+        }
+        fclose(csvDestino);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int testesMatrizAdjacencia(FILE *txtDestino, int **matrizAdjacencia)
+{
+    if (txtDestino != NULL)
+    {
+        for (int i = 0; i < 150; i++)
+        {
+            for (int j = 0; j < 150; j++)
+            {
+                fprintf(txtDestino, "Conexao %d a %d: %d\n", i, j, matrizAdjacencia[i][j]);
+            }
+        }
+        fclose(txtDestino);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int main()
+{
+
+    Flor *flores;
+    flores = malloc(150 * sizeof(Flor));
+    // Abertura e coleta dos dados do arquivo csv
+    FILE *f = fopen("IrisDataset.csv", "rt");
+    if (leituraIrisDataset(flores, f) == 0)
+    {
+        printf("Erro na abertura de arquivo\n");
+        return 1;
+    }
+
+    // Inicialização da matriz de distâncias euclidianas e cálculo delas entre as flores
+    double **distEuc = malloc(150 * sizeof(double *));
+    for (int i = 0; i < 150; i++)
+    {
+        distEuc[i] = malloc(150 * sizeof(double));
+    }
+    int iMaxEuc = 0, jMaxEuc = 0, iMinEuc = 0, jMinEuc = 0;
+    calculoDistanciaEuclidiana(distEuc, flores, &iMaxEuc, &jMaxEuc, &iMinEuc, &jMinEuc);
+
+    // Teste distancias euclidianas em csv
+    FILE *teste = fopen("distEuclidianas.csv", "wt");
+    if (testesDistanciaEuclidiana(teste, distEuc) == 0)
+    {
+        printf("Erro na abertura do arquivo!\n");
+        return 1;
+    }
+
+    // Inicialização da matriz de distâncias euclidianas normalizadas e cálculo delas entre as flores
+    double **distanciasEuclidianasNormalizadas;
+    distanciasEuclidianasNormalizadas = malloc(150 * sizeof(double *));
+    for (int i = 0; i < 150; i++)
+    {
+        distanciasEuclidianasNormalizadas[i] = malloc(150 * sizeof(double));
+    }
+    int iMaxNorm = 0, jMaxNorm = 0, iMinNorm = 0, jMinNorm = 0;
+    normalizacaoDistanciasEuclidianas(distanciasEuclidianasNormalizadas, distEuc, &iMaxNorm, &jMaxNorm, &iMinNorm, &jMinNorm, 
+    distEuc[iMinEuc][jMinEuc], distEuc[iMaxEuc][jMaxEuc]);
+
+    // Teste distancias normalizadas
+    FILE *teste2 = fopen("distEuclidianasNormalizadas.csv", "wt");
+    if (testesNormalizacao(teste2, distanciasEuclidianasNormalizadas) == 0)
+    {
+        printf("Erro na abertura do arquivo!\n");
+        return 1;
+    }
+
+    // Inicialização da matriz adjacência e ligação dos nodos caso a distância euclidiana normalizada seja <= 0,2
+    int **matrizAdj;
+    matrizAdj = malloc(150 * sizeof(int *));
+    for (int i = 0; i < 150; i++)
+    {
+        matrizAdj[i] = calloc(150, sizeof(int));
+    }
+    montarMatrizAdjacencia(matrizAdj, distanciasEuclidianasNormalizadas);
+
+    // Teste matriz adjacencia
+    FILE *mAdj = fopen("matrizAdj.txt", "wt");
+    if (testesMatrizAdjacencia(mAdj, matrizAdj) == 0)
+    {
+        printf("Erro na abertura do arquivo!\n");
+        return 1;
+    }
 
     // int *vetContido;
     // vetContido = calloc(150,sizeof(int));
@@ -167,9 +288,9 @@ int main()
     //     {
     //         fprintf(testes3,"%d\n", vetContido[i]);
     //     }
-        
+
     // }
-    
+
     //    int *vetContido2;
     // vetContido2 = calloc(150,sizeof(int));
     // dfs(50,matrizAdj,vetContido2);
@@ -180,35 +301,31 @@ int main()
     //     {
     //         fprintf(teste4, "%d\n", vetContido2[i]);
     //     }
-        
+
     // }
-    
-        FILE *data = fopen("data.csv", "wt");
-    if (data != NULL)
+
+    // Escrita do csv de resposta da Tarefa_1A
+    FILE *data = fopen("data.csv", "wt");
+    if (escritaResposta(data, matrizAdj, distanciasEuclidianasNormalizadas[iMaxNorm][jMaxNorm], 
+    distanciasEuclidianasNormalizadas[iMinNorm][jMinNorm], 
+    iMaxNorm, jMaxNorm, iMinNorm, jMinNorm, distEuc[iMaxEuc][jMaxEuc], 
+    distEuc[iMinEuc][jMinEuc], iMaxEuc, jMaxEuc, iMinEuc, jMinEuc) == 0)
     {
-        fprintf(data, "150,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i\n", distEuc[iMaxEuc][jMaxEuc], iMaxEuc, jMaxEuc,
-                distEuc[iMinEuc][jMinEuc], iMinEuc, jMinEuc, distEucNorm[iMaxNorm][jMaxNorm], iMaxNorm, jMaxNorm, distEucNorm[iMinNorm][jMinNorm],
-                iMinNorm, jMinNorm);
-        for (i = 0; i < 150; i++)
-        {
-            for (j = i + 1; j < 150; j++)
-            {
-                if (matrizAdj[i][j] == 1)
-                    fprintf(data, "%i,%i\n", i, j);
-            }
-        }
-        fclose(data);
-    }
-    else
-    {
-        printf("Erro ao computar os dados");
+        printf("Erro na abertura do arquivo!\n");
         return 1;
     }
+
+
+    //Liberacao de memoria
     for (int i = 0; i < 150; i++)
     {
         free(distEuc[i]);
+        free(distanciasEuclidianasNormalizadas[i]);
+        free(matrizAdj[i]);
     }
+    free(matrizAdj);
     free(distEuc);
-
+    free(distanciasEuclidianasNormalizadas);
+    free(flores);
     return 0;
 }
