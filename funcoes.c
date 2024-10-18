@@ -215,3 +215,66 @@ int escritaResposta(FILE *csvDestino, int **matrizAdjacencia,
     return 0;
   }
 }
+
+double calculaAcuracia(int fp, int tp, int fn, int tn){
+  return (tp+tn)/(tp+tn+fn+fp);
+}
+
+
+double comparaPredicao( Flor *flores, int *ligacao ) {
+  int fp = 0, tp = 0, fn = 0, tn = 0;
+  for( int i = 0; i < 150; i++ ) {
+    if( ligacao[i] == 1 ) {
+      if( strcmp(flores[i].tipo, "Setosa") == 0 ) {
+        tp++;
+      } else {
+        fp++;
+      }
+    } else {
+      if( strcmp(flores[i].tipo, "Setosa") == 0 ) {
+        fn++;
+      } else {
+        tn++;
+      }
+    }
+  }
+  return calculaAcuracia(fp, tp, fn, tn);
+}
+
+// Flor media(Flor *flores, int *ligacao){
+//   int count = 0;
+//   double somaSW = 0, somaSL = 0, somaPW = 0, somaPL = 0;
+//   Flor retorno;
+//   for (int i = 0; i < 150; i++)
+//   {
+//     if (ligacao[i] == 1)
+//     {
+//       somaSW += flores[i].sw;
+//       somaSL += flores[i].sl;
+//       somaPW += flores[i].pw;
+//       somaPL += flores[i].pl;
+//       count++;
+//     }
+//   }
+//   retorno.sw = somaSW/count;
+//   retorno.sl = somaSL/count;
+//   retorno.pw = somaPW/count;
+//   retorno.pl = somaPL/count;
+  
+//   return retorno;
+// }
+
+// int verificaPelaMedia(Flor aVerificar, Flor mediaSetosas, Flor mediaNSetosas){
+//   double deSet = distEucl(&aVerificar, &mediaSetosas), deNset = distEucl(&aVerificar, &mediaNSetosas);
+//   if (deSet > deNset)
+//   {
+//     return -1;
+//   }else if (deSet < deNset)
+//   {
+//     return 1;
+//   }else{
+//     return 0;
+//   }
+  
+  
+// }
