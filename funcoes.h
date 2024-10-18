@@ -1,6 +1,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio_ext.h>
 
 #ifndef DISTANCIAS
 #define DISTANCIAS
@@ -46,4 +48,13 @@ int escritaResposta(FILE *csvDestino, int **matrizAdjacencia,
                     double maxDistanciasEuclidianas,
                     double minDistanciasEuclidianas, int iMaxEuc, int jMaxEuc,
                     int iMinEuc, int jMinEuc);
+                    
+double comparaPredicao( Flor *flores, int *ligacao );
+
+double calculaAcuracia(int fp, int tp, int fn, int tn);
+
+// Flor media(Flor *flores, int *ligacao);
+
+// int verificaPelaMedia(Flor aVerificar, Flor mediaSetosas, Flor mediaNSetosas);
 #endif
+
