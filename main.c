@@ -176,10 +176,10 @@
     //     printf("\n");
     // }
 
-    for( int i = 0; i < 150; i++ ) {
-        printf("%i ", vetContido[i]);
-    }
-    printf("\n");
+    // for( int i = 0; i < 150; i++ ) {
+    //     printf("%i ", vetContido[i]);
+    // }
+    // printf("\n");
 
     // Cálculo da acurácia
     double acc = comparaPredicao(flores, vetContido);
