@@ -2,18 +2,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio_ext.h>
 
-#ifndef DISTANCIAS
-#define DISTANCIAS
+#ifndef FUNCOES_H
+#define FUNCOES_H
 typedef struct flor {
   char tipo[11];
   double sl, sw, pl, pw;
 } Flor;
 
+typedef struct subgrafo {
+  int tam;
+  int *indices;
+} Subgrafo;
+
+typedef struct maiorSub {
+  int tam1, tam2, indice1, indice2;
+} MaiorSub;
+
+
 double distEucl(Flor *f1, Flor *f2);
 
-double distEuclNorm(double **distEuc, int linha, int coluna, double min,
+double distEuclNorm(double distEuc, double min,
                     double max);
 
 void dfs(int raiz, int **matAdj, int *vetContido);
@@ -37,7 +46,7 @@ void montagemNormalizacaoDistanciasEuclidianas(
 int testesNormalizacao(FILE *txtDestino, double **distanciasNormalizadas);
 
 void montarMatrizAdjacencia(int **matrizAdjacencia,
-                            double **distanciasNormalizadas);
+                            double **distanciasNormalizadas, double limitante);
 
 int testesMatrizAdjacencia(FILE *txtDestino, int **matrizAdjacencia);
 
@@ -47,14 +56,15 @@ int escritaResposta(FILE *csvDestino, int **matrizAdjacencia,
                     int jMaxNorm, int iMinNorm, int jMinNorm,
                     double maxDistanciasEuclidianas,
                     double minDistanciasEuclidianas, int iMaxEuc, int jMaxEuc,
-                    int iMinEuc, int jMinEuc);
+                    int iMinEuc, int jMinEuc, double acuracia);
                     
-double comparaPredicao( Flor *flores, int *ligacao );
+int contaSetosa( Subgrafo *sub, Flor *flores );
+
+double comparaPredicao( Flor *flores, int *ligacaoSetosas );
 
 double calculaAcuracia(int fp, int tp, int fn, int tn);
 
-// Flor media(Flor *flores, int *ligacao);
+Flor *media(Flor *flores, Subgrafo *ligacao);
 
 // int verificaPelaMedia(Flor aVerificar, Flor mediaSetosas, Flor mediaNSetosas);
 #endif
-

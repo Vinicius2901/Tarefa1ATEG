@@ -7,9 +7,9 @@ double distEucl(Flor *f1, Flor *f2) {
 }
 
 // Calculo da distancia euclidiana normalizada
-double distEuclNorm(double **distEuc, int linha, int coluna, double min,
+double distEuclNorm(double distEuc, double min,
                     double max) {
-  return (distEuc[linha][coluna] - min) / (max - min);
+  return (distEuc - min) / (max - min);
 }
 
 // DFS
@@ -112,7 +112,7 @@ void montagemNormalizacaoDistanciasEuclidianas(
   for (int i = 0; i < 150; i++) {
     distanciasNormalizadas[i][i] = 0;
     for (int j = i + 1; j < 150; j++) {
-      aux = distEuclNorm(distanciasEuclidianas, i, j, minimoEuclidiano,
+      aux = distEuclNorm(distanciasEuclidianas[i][j], minimoEuclidiano,
                          maximoEuclidiano);
       distanciasNormalizadas[i][j] = aux;
       distanciasNormalizadas[j][i] = aux;
@@ -158,11 +158,11 @@ int testesNormalizacao(FILE *txtDestino, double **distanciasNormalizadas) {
 
 // Montagem da matriz de adjacencia
 void montarMatrizAdjacencia(int **matrizAdjacencia,
-                            double **distanciasNormalizadas) {
+                            double **distanciasNormalizadas, double limitante) {
   for (int i = 0; i < 150; i++) {
     matrizAdjacencia[i][i] = 0;
     for (int j = i + 1; j < 150; j++) {
-      if (distanciasNormalizadas[i][j] <= 0.2) {
+      if (distanciasNormalizadas[i][j] <= limitante) {
         matrizAdjacencia[i][j] = 1;
         matrizAdjacencia[j][i] = 1;
       } else {
@@ -196,13 +196,13 @@ int escritaResposta(FILE *csvDestino, int **matrizAdjacencia,
                     int jMaxNorm, int iMinNorm, int jMinNorm,
                     double maxDistanciasEuclidianas,
                     double minDistanciasEuclidianas, int iMaxEuc, int jMaxEuc,
-                    int iMinEuc, int jMinEuc) {
+                    int iMinEuc, int jMinEuc, double acuracia) {
   if (csvDestino != NULL) {
-    fprintf(csvDestino, "150,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i\n",
+    fprintf(csvDestino, "150,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i,%.2lf,%i,%i, %.2lf\n",
             maxDistanciasEuclidianas, iMaxEuc, jMaxEuc,
             minDistanciasEuclidianas, iMinEuc, jMinEuc,
             maxDistanciasNormalizadas, iMaxNorm, jMaxNorm,
-            minDistanciasNormalizadas, iMinNorm, jMinNorm);
+            minDistanciasNormalizadas, iMinNorm, jMinNorm, acuracia);
     for (int i = 0; i < 150; i++) {
       for (int j = i + 1; j < 150; j++) {
         if (matrizAdjacencia[i][j] == 1)
@@ -220,11 +220,20 @@ double calculaAcuracia(int fp, int tp, int fn, int tn){
   return (tp+tn)/(tp+tn+fn+fp);
 }
 
+int contaSetosa( Subgrafo *sub, Flor *flores ) {
+  int count = 0;
+  for( int i = 0; i < sub->tam; i++ ) {
+    if( strcmp( flores[sub->indices[i]].tipo, "Setosa") == 0) {
+      count++;
+    }
+  }
+  return count;
+}
 
-double comparaPredicao( Flor *flores, int *ligacao ) {
+double comparaPredicao( Flor *flores, int *ligacaoSetosas ) {
   int fp = 0, tp = 0, fn = 0, tn = 0;
   for( int i = 0; i < 150; i++ ) {
-    if( ligacao[i] == 1 ) {
+    if( ligacaoSetosas[i] == 1 ) {
       if( strcmp(flores[i].tipo, "Setosa") == 0 ) {
         tp++;
       } else {
@@ -241,28 +250,25 @@ double comparaPredicao( Flor *flores, int *ligacao ) {
   return calculaAcuracia(fp, tp, fn, tn);
 }
 
-// Flor media(Flor *flores, int *ligacao){
-//   int count = 0;
-//   double somaSW = 0, somaSL = 0, somaPW = 0, somaPL = 0;
-//   Flor retorno;
-//   for (int i = 0; i < 150; i++)
-//   {
-//     if (ligacao[i] == 1)
-//     {
-//       somaSW += flores[i].sw;
-//       somaSL += flores[i].sl;
-//       somaPW += flores[i].pw;
-//       somaPL += flores[i].pl;
-//       count++;
-//     }
-//   }
-//   retorno.sw = somaSW/count;
-//   retorno.sl = somaSL/count;
-//   retorno.pw = somaPW/count;
-//   retorno.pl = somaPL/count;
+Flor *media(Flor *flores, Subgrafo *ligacao){
+  int count = 0;
+  double somaSW = 0, somaSL = 0, somaPW = 0, somaPL = 0;
+  Flor *retorno = malloc(sizeof(Flor));
+  for (int i = 0; i < ligacao->tam; i++)
+  {
+      somaSW += flores[ligacao->indices[i]].sw;
+      somaSL += flores[ligacao->indices[i]].sl;
+      somaPW += flores[ligacao->indices[i]].pw;
+      somaPL += flores[ligacao->indices[i]].pl;
+      count++;
+  }
+  retorno->sw = somaSW/count;
+  retorno->sl = somaSL/count;
+  retorno->pw = somaPW/count;
+  retorno->pl = somaPL/count;
   
-//   return retorno;
-// }
+  return retorno;
+}
 
 // int verificaPelaMedia(Flor aVerificar, Flor mediaSetosas, Flor mediaNSetosas){
 //   double deSet = distEucl(&aVerificar, &mediaSetosas), deNset = distEucl(&aVerificar, &mediaNSetosas);
