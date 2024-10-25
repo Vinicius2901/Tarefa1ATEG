@@ -137,11 +137,13 @@
     for( int i = 0; i < novoSubGraf; i++ ) {
         if( i != maiores->indice1 && i != maiores->indice2 ) {
             if( distEucl( media1, &flores[listaNovos[i]->indices[0]]) < distEucl( media2, &flores[listaNovos[i]->indices[0]]) ) {
+                matrizAdj[listaNovos[maiores->indice1]->indices[0]][listaNovos[i]->indices[0]] = 1;
                 for( int j = 0; j < listaNovos[i]->tam; j++ ) {
                     listaNovos[maiores->indice1]->indices[listaNovos[maiores->indice1]->tam] = listaNovos[i]->indices[j];
                     (listaNovos[maiores->indice1]->tam)++;
                 }
             } else {
+                matrizAdj[listaNovos[maiores->indice2]->indices[0]][listaNovos[i]->indices[0]] = 1;
                 for( int j = 0; j < listaNovos[i]->tam; j++ ) {
                     listaNovos[maiores->indice2]->indices[listaNovos[maiores->indice2]->tam] = listaNovos[i]->indices[j];
                     (listaNovos[maiores->indice2]->tam)++;
